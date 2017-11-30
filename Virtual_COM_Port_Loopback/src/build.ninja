@@ -1,0 +1,107 @@
+#project specific variables
+#external libraries
+stlib = ../../../STM32F10x_StdPeriph_Lib
+usblib = ../../../STM32_USB-FS-Device_Driver
+project_name = VirtualCOM_Loopback
+
+#ninja make configuration
+builddir = ../obj
+tool = arm-none-eabi-gcc
+cflags = -mcpu=cortex-m3 -mlittle-endian -mthumb
+deflst = -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER -DUSE_STM3210B_EVAL
+incdir =  -I./ $
+          -I../inc $
+          -I$stlib/CMSIS/Core $
+          -I$stlib/CMSIS/Device $
+          -I$stlib/STM32F10x_StdPeriph_Driver/inc $
+          -I$usblib/inc $
+          -I$stlib/Utilities/STM32_EVAL/Common $
+          -I$stlib/Utilities/STM32_EVAL/STM3210B_EVAL $
+
+cscript = -T../../../linker_scripts/stm32f10x_md.ld
+
+rule OBJCOPY
+  command = arm-none-eabi-objcopy -Oihex $in $out && arm-none-eabi-size $in
+  description = Creating $out hexfile
+
+rule CC
+  depfile = $out.d
+  deps = gcc
+  command = $tool -MMD -MF $out.d  -g -Os -Wall -fdata-sections -ffunction-sections $cflags $incdir $deflst -c $in -o $out
+  description = Compiling $in
+
+rule CLINK
+  command = $tool -g $cflags $deflst $cscript -Wl,--gc-sections $in -o $out
+  description = Linking $out
+
+build $builddir/hw_config.o: CC hw_config.c
+build $builddir/main.o: CC main.c
+build $builddir/stm32_it.o: CC stm32_it.c
+build $builddir/usb_desc.o: CC usb_desc.c
+build $builddir/usb_endp.o: CC usb_endp.c
+build $builddir/usb_istr.o: CC usb_istr.c
+build $builddir/usb_prop.o: CC usb_prop.c
+build $builddir/usb_pwr.o: CC usb_pwr.c
+build $builddir/usb_core.o: CC $usblib/src/usb_core.c
+build $builddir/usb_init.o: CC $usblib/src/usb_init.c
+build $builddir/usb_int.o: CC $usblib/src/usb_int.c
+build $builddir/usb_mem.o: CC $usblib/src/usb_mem.c
+build $builddir/usb_regs.o: CC $usblib/src/usb_regs.c
+build $builddir/usb_sil.o: CC $usblib/src/usb_sil.c
+#build $builddir/main.o: CC main.c
+#build $builddir/stm32f10x_it.o: CC stm32f10x_it.c
+build $builddir/system_stm32f10x.o: CC system_stm32f10x.c
+#build $builddir/system_stm32f10x.o: CC $stlib/CMSIS/Device/system_stm32f10x.c
+build $builddir/startup_stm32f10x_md.o: CC $stlib/CMSIS/Device/startup/gcc_ride7/startup_stm32f10x_md.s
+build $builddir/misc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/misc.c
+build $builddir/stm32f10x_exti.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_exti.c
+build $builddir/stm32f10x_flash.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_flash.c
+build $builddir/stm32f10x_rcc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_rcc.c
+build $builddir/stm32f10x_gpio.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_gpio.c
+#build $builddir/stm32f10x_dac.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_dac.c
+#build $builddir/stm32f10x_rtc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_rtc.c
+#build $builddir/stm32f10x_adc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_adc.c
+#build $builddir/stm32f10x_dbgmcu.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_dbgmcu.c
+#build $builddir/stm32f10x_sdio.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_sdio.c
+#build $builddir/stm32f10x_can.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_can.c
+#build $builddir/stm32f10x_spi.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_spi.c
+#build $builddir/stm32f10x_crc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_crc.c
+#build $builddir/stm32f10x_dma.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_dma.c
+#build $builddir/stm32f10x_i2c.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_i2c.c
+#build $builddir/stm32f10x_iwdg.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_iwdg.c
+#build $builddir/stm32f10x_tim.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_tim.c
+#build $builddir/stm32f10x_pwr.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_pwr.c
+build $builddir/stm32f10x_usart.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_usart.c
+#build $builddir/stm32f10x_fsmc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_fsmc.c
+#build $builddir/stm32f10x_wwdg.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_wwdg.c
+build $builddir/stm3210b_eval.o: CC $stlib/Utilities/STM32_EVAL/STM3210B_EVAL/stm3210b_eval.c
+
+
+
+
+build $builddir/$project_name.elf: CLINK $builddir/main.o $
+                                      $builddir/hw_config.o $
+                                      $builddir/stm32_it.o $
+                                      $builddir/usb_desc.o $
+                                      $builddir/usb_endp.o $
+                                      $builddir/usb_istr.o $
+                                      $builddir/usb_prop.o $
+                                      $builddir/usb_pwr.o $
+                                      $builddir/usb_core.o $
+                                      $builddir/usb_init.o $
+                                      $builddir/usb_int.o $
+                                      $builddir/usb_mem.o $
+                                      $builddir/usb_regs.o $
+                                      $builddir/usb_sil.o $
+                                      $builddir/system_stm32f10x.o $
+                                      $builddir/startup_stm32f10x_md.o $
+                                      $builddir/misc.o $
+                                      $builddir/stm32f10x_exti.o $
+                                      $builddir/stm32f10x_flash.o $
+                                      $builddir/stm32f10x_rcc.o $
+                                      $builddir/stm32f10x_gpio.o $
+                                      $builddir/stm32f10x_usart.o $
+                                      $builddir/stm3210b_eval.o
+
+build $builddir/$project_name.hex: OBJCOPY $builddir/$project_name.elf
+default $builddir/$project_name.hex
